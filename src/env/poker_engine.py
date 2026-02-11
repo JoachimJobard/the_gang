@@ -15,13 +15,12 @@ class PokerEngine:
         # careful! for convinience, 0 = 2, 1 = 3, ..., 9 = Jack, 10 = Queen, 11 = King, 12 = Ace
         return [(rank, suit) for suit in suits for rank in ranks]
     
-    def draw_hand(self):
+    def draw_hands(self):
         hands = []
         random.shuffle(self.deck)
-        for _ in range(self.n_players):
+        for player in range(self.n_players):
             individual_hands = [self.deck.pop() for _ in range(2)]
-            hands.append(individual_hands)
-        return hands
+            self.hands[player] = individual_hands
     
     def deal_table(self):
         if self.round == 0:
@@ -52,12 +51,10 @@ class PokerEngine:
                 flush_cards.append((14, flush_suit))  # Ace can be high
             flush_cards = sorted(flush_cards, key=lambda x: x[0], reverse=True)[:5]
         is_straight, straight_hand = self.check_straight(total_deck)
-        if is_straight and (straight_hand[0][0] == 1 and straight_hand[0][1] == 10):
-            straight_hand[0][0] = 14  # change value of ace if royal straight
         # format is (name hand, ranking in hand types, tiebreak determination (higher is better))
         if is_flush and is_straight: #straight flush
             if set(straight_hand).issubset(set(flush_cards)):
-                return (8, sum(straight_hand[:][0])) #get rid of the point of the ace
+                return (8, sum(rank for rank, suit in straight_hand)) # here we can just sum the ranks of the straight cards, since the highest card will have more weight than the others
         elif 4 in rank_count.values(): #four of a kind
             return (7, (rank_count.most_common(1)[0][0])) #here just the most common is enough
         elif 3 in rank_count.values() and 2 in rank_count.values():#full house
@@ -67,7 +64,7 @@ class PokerEngine:
         elif is_flush: #flush
             return (5,sum(sorted(flush_cards, key=lambda x: x[0], reverse=True)[:5][0])) # here we can just sum the ranks of the flush cards, since the highest card will have more weight than the others
         elif is_straight: #straight
-            return (4, sum(straight_hand[:][0])) # here we can just sum the ranks of the straight cards, since the highest card will have more weight than the others
+            return (4, sum([rank for rank, suit in straight_hand])) # here we can just sum the ranks of the straight cards, since the highest card will have more weight than the others
         elif 3 in rank_count.values(): #three of a kind
             return (3, (rank_count.most_common(1)[0][0])) #no need to sum here
         elif list(rank_count.values()).count(2) >= 2:#two pair
@@ -88,11 +85,11 @@ class PokerEngine:
         return False, []
     
     def rank_hands(self):
-        rankings = {}
         list_evalutations = []
         for player, hand in self.hands.items():
             list_evalutations.append((player, self.evaluate_hand(hand)))
-        list_raw_evaluations = [(valuation[1], valuation[2]) for valuation in list_evalutations]
-        list_raw_evaluations.sort() #lexicographical sort, first by hand type, then by tiebreaker
-        return rankings
+        list_evalutations.sort(key=lambda x: x[1]) #lexicographical sort, first by hand type, then by tiebreaker
+        return [(player, score) for player, score in list_evalutations] #we only return the rankings of the players
+
+#SIX SEVENNNNNNNNNN
     
