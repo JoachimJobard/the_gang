@@ -40,4 +40,27 @@ class TestPokerEngine(unittest.TestCase):
         print(self.engine.table)
         list_rankings = self.engine.rank_hands()
         print(list_rankings)
-        
+    
+    def test_check_straight(self):
+        hand = [(0, 'Heart'), (1, 'Diamond')]
+        self.engine.table = [(2, 'Club'), (3, 'Spade'), (4, 'Heart')]
+        is_straight, straight_hand = self.engine.check_straight(hand + self.engine.table)
+        self.assertTrue(is_straight)
+        self.assertEqual(straight_hand, [(0, 'Heart'), (1, 'Diamond'), (2, 'Club'), (3, 'Spade'), (4, 'Heart')])
+
+    def test_straight_flush(self):
+        self.engine.reset()
+        self.engine.draw_hands()
+        hand = [(0, 'Heart'), (12, 'Heart')]
+        self.engine.hands[0] = hand
+        self.engine.table = [(1, 'Heart'), (2, 'Heart'), (3, 'Heart'), (6, 'Space'), (7, 'Diamond')]
+        list_hands = self.engine.rank_hands()
+        print(list_hands)
+    
+    def test_extensive(self):
+        for _ in range(10000):
+            self.engine.reset()
+            self.engine.draw_hands()
+            for _ in range(3):
+                self.engine.deal_table()
+            _ = self.engine.rank_hands()
