@@ -5,9 +5,11 @@ class PokerEngine:
     def __init__(self, n_players):
         self.deck = self.create_deck()
         self.n_players = n_players
-        self.hands = {player: [] for player in range(n_players)}
-        self.table = []
-        self.round = 0
+        self.playing_cards = random.sample(self.deck, 2*n_players + 5) # sample all at once
+        self.hands = {player: self.playing_cards[2*player:2*player+2] for player in range(n_players)}
+        self.table = self.playing_cards[2*n_players:2*n_players+5]
+        self.table_mask = [False]*5 # we will unmask the cards as we advance in the game
+        self.round = 2 # preflop put 2 for convenience and simplicity (deal table is not called before first hand)
 
     def create_deck(self):
         suits = ['Heart', 'Diamond', 'Club', 'Spade']
@@ -22,19 +24,15 @@ class PokerEngine:
             self.hands[player] = individual_hands
     
     def deal_table(self):
-        if self.round == 0:
-            # Flop
-            self.table.extend([self.deck.pop() for _ in range(3)])
-        elif self.round in [1, 2]:
-            # Turn or River
-            self.table.append(self.deck.pop())
         self.round += 1
+        self.table_mask[:self.round+1] = [True]*(self.round+1) # unmask cards
     
     def reset(self):
         self.deck = self.create_deck()
-        self.hands = {player: [] for player in range(self.n_players)}
-        self.table = []
-        self.round = 0
+        self.hands = {player: self.playing_cards[2*player:2*player+2] for player in range(self.n_players)}
+        self.table = self.playing_cards[2*self.n_players:2*self.n_players+5]
+        self.table_mask = [False]*5
+        self.round = 2
     
     def evaluate_hand(self, hand):
         total_deck = hand + self.table.copy()
