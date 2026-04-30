@@ -2,7 +2,7 @@ from typing import NamedTuple
 
 import numpy as np
 
-from env.poker_engine import PokerEngine
+from src.env.poker_engine import PokerEngine
 from utils.loss_functions import kendall_tau_b
 
 class StateEnv(NamedTuple):
